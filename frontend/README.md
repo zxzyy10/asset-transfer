@@ -34,8 +34,8 @@ USDB is prefilled from the Buzzing Base deployment state:
 
 `0x89401d7C5F5Cf4936F10418B9C536f97b0bCf71B`
 
-YES and NO are placeholders. Fill their Base mainnet ERC20 token addresses in
-`config.js` and set `enabled: true` when ready.
+YES and NO holdings are market-level positions under each user. Fill each
+position's `tokenAddress` and set `enabled: true` when ready.
 
 ## Local Preview
 

@@ -16,6 +16,8 @@ Edit `frontend/config.js`.
 
 - `tokens`: USDB is prefilled. Fill YES and NO token addresses when ready.
 - `users`: reserved user list. The connected wallet must match `wallet`.
+- `positions`: market-level YES/NO holdings. Each position needs a
+  `tokenAddress` and `enabled: true` before it can be transferred.
 
 User entry example:
 
@@ -29,6 +31,20 @@ User entry example:
     yes: { amount: "10" },
     no: { amount: "10" },
   },
+}
+```
+
+Market position example:
+
+```js
+{
+  marketId: "1050",
+  market: "Team Secret beats Nongshim RedForce by Apr 2026?",
+  direction: "YES",
+  amount: "578.921021",
+  tokenAddress: "0xOutcomeToken...",
+  decimals: 6,
+  enabled: true,
 }
 ```
 

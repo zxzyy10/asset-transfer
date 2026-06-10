@@ -45,15 +45,43 @@ function sameAddress(a, b) {
 }
 
 function enabledTokens() {
-  return tokens.filter((token) => token.enabled && isAddress(token.address));
+  return buildTransferItems().filter((item) => item.enabled && isAddress(item.address));
 }
 
 function tokenById(id) {
-  return tokens.find((token) => token.id === id);
+  return buildTransferItems().find((item) => item.id === id);
 }
 
 function findUser(wallet) {
   return users.find((user) => sameAddress(user.wallet, wallet)) || null;
+}
+
+function buildTransferItems() {
+  const baseItems = tokens.map((token) => ({
+    ...token,
+    kind: "erc20",
+    amount: currentUser?.assets?.[token.id]?.amount || "",
+    recipient: currentUser?.defaultRecipient || "",
+  }));
+
+  const positionItems = (currentUser?.positions || []).map((position, index) => ({
+    id: `position-${position.marketId}-${position.direction.toLowerCase()}-${index}`,
+    kind: "position",
+    symbol: `${position.direction} #${position.marketId}`,
+    name: position.market,
+    address: position.tokenAddress || "",
+    decimals: position.decimals ?? 6,
+    enabled: Boolean(position.enabled && position.tokenAddress),
+    note:
+      position.note ||
+      "Outcome token address is not configured yet. Fill tokenAddress and set enabled: true in frontend/config.js.",
+    amount: position.amount || "",
+    recipient: currentUser?.defaultRecipient || "",
+    marketId: position.marketId,
+    direction: position.direction,
+  }));
+
+  return currentUser ? [...baseItems, ...positionItems] : baseItems;
 }
 
 async function currentChainIdHex() {
@@ -123,10 +151,13 @@ function renderReservedUsers() {
     .map((user) => {
       const assetText = Object.entries(user.assets || {})
         .map(([assetId, item]) => {
-          const token = tokenById(assetId);
+          const token = tokens.find((candidate) => candidate.id === assetId);
           return `${token?.symbol || assetId}: ${item.amount || "-"}`;
         })
         .join(" / ");
+      const summary = user.summary
+        ? `YES ${user.summary.yes} / NO ${user.summary.no} / USDB ${user.summary.usdb} / ${user.summary.marketCount} markets`
+        : assetText;
 
       return `
         <div class="user-row">
@@ -134,7 +165,7 @@ function renderReservedUsers() {
             <strong>${user.label || "User"}</strong>
             <span>${shortAddress(user.wallet)}</span>
           </div>
-          <small>${assetText || "No preset assets"}</small>
+          <small>${summary || "No preset assets"}</small>
         </div>
       `;
     })
@@ -142,7 +173,7 @@ function renderReservedUsers() {
 }
 
 function renderAssets() {
-  const visibleTokens = tokens.filter((token) => token.enabled || token.note);
+  const visibleTokens = buildTransferItems().filter((token) => token.enabled || token.note || token.kind === "erc20");
 
   if (!visibleTokens.length) {
     assetListEl.innerHTML = `<div class="empty">No assets configured.</div>`;
@@ -151,7 +182,6 @@ function renderAssets() {
 
   assetListEl.innerHTML = visibleTokens
     .map((token) => {
-      const preset = currentUser?.assets?.[token.id] || {};
       const disabledReason = !token.enabled
         ? token.note || "Token is disabled in config."
         : !isAddress(token.address)
@@ -177,11 +207,11 @@ function renderAssets() {
           <div class="form-grid">
             <label>
               Recipient
-              <input id="recipient-${token.id}" class="mono" placeholder="0x..." value="${currentUser?.defaultRecipient || ""}" ${isDisabled ? "disabled" : ""} />
+              <input id="recipient-${token.id}" class="mono" placeholder="0x..." value="${token.recipient || ""}" ${isDisabled ? "disabled" : ""} />
             </label>
             <label>
               Amount
-              <input id="amount-${token.id}" inputmode="decimal" placeholder="0.0" value="${preset.amount || ""}" ${isDisabled ? "disabled" : ""} />
+              <input id="amount-${token.id}" inputmode="decimal" placeholder="0.0" value="${token.amount || ""}" ${isDisabled ? "disabled" : ""} />
             </label>
           </div>
 
