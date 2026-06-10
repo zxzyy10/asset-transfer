@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Buzzing Base Transfer</title>
+    <link rel="stylesheet" href="./style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.5/dist/ethers.umd.min.js"></script>
+  </head>
+  <body>
+    <main class="shell">
+      <section class="topbar">
+        <div>
+          <p class="eyebrow">Base Mainnet</p>
+          <h1>Buzzing Transfer</h1>
+        </div>
+        <button id="connectBtn" class="primary">Connect Wallet</button>
+      </section>
+
+      <section class="status-panel">
+        <div class="status" id="status">Not connected</div>
+        <dl class="meta">
+          <div>
+            <dt>Wallet</dt>
+            <dd id="account">-</dd>
+          </div>
+          <div>
+            <dt>Allowed user</dt>
+            <dd id="allowedUser">-</dd>
+          </div>
+          <div>
+            <dt>Network</dt>
+            <dd id="network">-</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="transfer-panel">
+        <div class="panel-heading">
+          <div>
+            <h2>Assets</h2>
+            <p>Choose one asset at a time, confirm recipient and amount, then send.</p>
+          </div>
+          <button id="refreshBtn" class="secondary" disabled>Refresh</button>
+        </div>
+
+        <div id="assetList" class="asset-list"></div>
+      </section>
+
+      <section class="list-panel">
+        <div class="panel-heading compact">
+          <h2>Reserved User List</h2>
+          <span id="userCount">0 users</span>
+        </div>
+        <div id="reservedUsers" class="reserved-users"></div>
+      </section>
+    </main>
+
+    <script src="./config.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
