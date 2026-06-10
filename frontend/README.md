@@ -1,4 +1,4 @@
-# Buzzing Base Transfer
+# Bizzy Base Transfer
 
 Static transfer page for a reserved list of Base mainnet users.
 

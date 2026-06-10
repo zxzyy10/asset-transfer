@@ -1,4 +1,4 @@
-# Buzzing Asset Transfer
+# Bizzy Asset Transfer
 
 Static Base mainnet transfer page for a reserved list of users.
 
