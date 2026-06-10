@@ -17,7 +17,7 @@ Edit `window.TRANSFER_APP_CONFIG.users` in `config.js`.
 {
   label: "Alice",
   wallet: "0xSenderWallet...",
-  defaultRecipient: "0xRecipient...",
+  defaultRecipient: "0xAssignedRecipient...",
   assets: {
     usdb: { amount: "100" },
     yes: { amount: "10" },
@@ -27,6 +27,9 @@ Edit `window.TRANSFER_APP_CONFIG.users` in `config.js`.
 ```
 
 The connected wallet must match `wallet`; otherwise transfer buttons stay disabled.
+`defaultRecipient` is the fixed destination for all of that user's assets.
+The page renders it as read-only and uses the configured value when sending
+the transaction.
 
 ## Configure Tokens
 

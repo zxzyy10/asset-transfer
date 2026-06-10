@@ -18,6 +18,9 @@ Edit `frontend/config.js`.
 - `users`: reserved user list. The connected wallet must match `wallet`.
 - `positions`: market-level YES/NO holdings. Each position needs a
   `tokenAddress` and `enabled: true` before it can be transferred.
+- `defaultRecipient`: fixed destination address for all assets belonging to
+  that user. The transfer form shows this as read-only and transactions use
+  this configured value directly.
 
 User entry example:
 
@@ -25,7 +28,7 @@ User entry example:
 {
   label: "Alice",
   wallet: "0xSenderWallet...",
-  defaultRecipient: "0xRecipient...",
+  defaultRecipient: "0xAssignedRecipient...",
   assets: {
     usdb: { amount: "100" },
     yes: { amount: "10" },

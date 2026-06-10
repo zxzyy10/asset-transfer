@@ -206,7 +206,9 @@ function renderAssets() {
         ? token.note || "Token is disabled in config."
         : !isAddress(token.address)
           ? "Token address is missing."
-          : "";
+          : !isAddress(token.recipient)
+            ? "Recipient address is not configured."
+            : "";
       const isDisabled = Boolean(disabledReason);
       const selectedClass = token.id === selectedItemId ? " selected" : "";
       const disabledClass = isDisabled ? " disabled" : "";
@@ -274,11 +276,11 @@ function syncButtons() {
 }
 
 function renderTransferDetail(item) {
-  if (!item || !item.enabled || !isAddress(item.address)) {
+  if (!item || !item.enabled || !isAddress(item.address) || !isAddress(item.recipient)) {
     transferDetailEl.innerHTML = `
       <div class="detail-empty">
         <h3>Select an asset</h3>
-        <p>Choose a pending asset from the list after connecting an eligible wallet.</p>
+        <p>Choose a ready pending asset from the list after connecting an eligible wallet.</p>
       </div>
     `;
     syncButtons();
@@ -301,12 +303,12 @@ function renderTransferDetail(item) {
 
     <div class="form-grid">
       <label>
-        Recipient
-        <input id="selectedRecipient" class="mono" placeholder="0x..." value="${item.recipient || ""}" />
+        Fixed recipient
+        <input id="selectedRecipient" class="mono" placeholder="0x..." value="${item.recipient || ""}" disabled />
       </label>
       <label>
-        Amount
-        <input id="selectedAmount" inputmode="decimal" placeholder="0.0" value="${item.amount || ""}" />
+        Fixed amount
+        <input id="selectedAmount" inputmode="decimal" placeholder="0.0" value="${item.amount || ""}" disabled />
       </label>
     </div>
 
@@ -336,8 +338,6 @@ async function refreshState() {
 
 async function sendTransfer(tokenId) {
   const token = tokenById(tokenId);
-  const recipientInput = document.getElementById("selectedRecipient");
-  const amountInput = document.getElementById("selectedAmount");
   const hintEl = document.getElementById("selectedHint");
   const button = document.getElementById("sendSelectedBtn");
 
@@ -347,8 +347,8 @@ async function sendTransfer(tokenId) {
     if (!(await ensureTargetChain())) throw new Error(`Please switch network to ${chain.name}.`);
     if (!token?.enabled || !isAddress(token.address)) throw new Error("Token is not configured.");
 
-    const recipient = recipientInput.value.trim();
-    const amount = amountInput.value.trim();
+    const recipient = (token.recipient || "").trim();
+    const amount = (token.amount || "").trim();
     if (!isAddress(recipient)) throw new Error("Please enter a valid recipient address.");
     if (!amount || Number(amount) <= 0) throw new Error("Please enter a positive amount.");
 

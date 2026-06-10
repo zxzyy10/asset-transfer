@@ -25,9 +25,10 @@ window.TRANSFER_APP_CONFIG = {
 
   users: [
     {
-      label: "User 1",
+      label: "Unmatched account",
       wallet: "0x492ec76866537bbfdf2397ed3fe2bcea81d81d0d",
       defaultRecipient: "",
+      note: "No matched user account or assigned address.",
       summary: { yes: "3030.854112", no: "0", usdb: "458.22423", marketCount: 30 },
       assets: { usdb: { amount: "458.22423" } },
       positions: [
@@ -64,9 +65,13 @@ window.TRANSFER_APP_CONFIG = {
       ],
     },
     {
-      label: "User 2",
+      label: "PagpagEater (#230)",
       wallet: "0x36ccb772039c10e4056736f4e5c6089332f18a98",
-      defaultRecipient: "",
+      userId: "230",
+      username: "PagpagEater",
+      defaultRecipient: "0xe8dce3f5d50f49314d9f7f89e6de141cd810d12b",
+      embeddedWallet: "",
+      note: "No embedded wallet found in current binding info.",
       summary: { yes: "92.644464", no: "0", usdb: "0.845669", marketCount: 1 },
       assets: { usdb: { amount: "0.845669" } },
       positions: [
@@ -74,9 +79,13 @@ window.TRANSFER_APP_CONFIG = {
       ],
     },
     {
-      label: "User 3",
+      label: "hakdog (#177)",
       wallet: "0x69db677fe9a93aaaeef0e0171f08a72de1e38baa",
-      defaultRecipient: "",
+      userId: "177",
+      username: "hakdog",
+      defaultRecipient: "0x9826c86de32051bc5df56c18051ecbedbac59c3d",
+      embeddedWallet: "",
+      note: "No embedded wallet found in current binding info.",
       summary: { yes: "0", no: "16.773848", usdb: "29.909141", marketCount: 1 },
       assets: { usdb: { amount: "29.909141" } },
       positions: [
@@ -84,9 +93,13 @@ window.TRANSFER_APP_CONFIG = {
       ],
     },
     {
-      label: "User 4",
+      label: "chuchunmaru (#6292)",
       wallet: "0x6f71c6e876f3d0f069a88a4bca034f90f1c08cdb",
-      defaultRecipient: "",
+      userId: "6292",
+      username: "chuchunmaru",
+      defaultRecipient: "0x06a83b2ffbc009734e4d9fe98721ed86ec7a6832",
+      embeddedWallet: "",
+      note: "No embedded wallet found in current binding info.",
       summary: { yes: "0", no: "16.734329", usdb: "0.011942", marketCount: 1 },
       assets: { usdb: { amount: "0.011942" } },
       positions: [
@@ -94,9 +107,13 @@ window.TRANSFER_APP_CONFIG = {
       ],
     },
     {
-      label: "User 5",
+      label: "h4cker (#874)",
       wallet: "0xc0d0741dcaafedbd49ab29786e3e6a005e46aa87",
-      defaultRecipient: "",
+      userId: "874",
+      username: "h4cker",
+      defaultRecipient: "0x2a513a0f88dd7469f71edb25a960be0880d34df0",
+      embeddedWallet: "",
+      note: "No embedded wallet found in current binding info.",
       summary: { yes: "0.009547", no: "10.269761", usdb: "0.004671", marketCount: 2 },
       assets: { usdb: { amount: "0.004671" } },
       positions: [
@@ -105,9 +122,13 @@ window.TRANSFER_APP_CONFIG = {
       ],
     },
     {
-      label: "User 6",
+      label: "0xf0rd (#6149)",
       wallet: "0x5f580cc529f9d64e7a1f7f65084937ff6c6bcbb6",
-      defaultRecipient: "",
+      userId: "6149",
+      username: "0xf0rd",
+      defaultRecipient: "0x106217a1914bc7711be5ee17dbfba194f4939e16",
+      embeddedWallet: "",
+      note: "No embedded wallet found in current binding info.",
       summary: { yes: "5.46125", no: "2.499999", usdb: "0.166773", marketCount: 3 },
       assets: { usdb: { amount: "0.166773" } },
       positions: [
@@ -117,9 +138,13 @@ window.TRANSFER_APP_CONFIG = {
       ],
     },
     {
-      label: "User 7",
+      label: "Ejayyuji (#8792)",
       wallet: "0xf2ceaf36bcde76d7394f7f54faa562ee4fe6043e",
-      defaultRecipient: "",
+      userId: "8792",
+      username: "Ejayyuji",
+      defaultRecipient: "0xd387d8d452aa3f607bf2cf08f57aef0ba21bdfa2",
+      embeddedWallet: "",
+      note: "No embedded wallet found in current binding info.",
       summary: { yes: "2.642986", no: "0", usdb: "0.015992", marketCount: 2 },
       assets: { usdb: { amount: "0.015992" } },
       positions: [
@@ -128,9 +153,13 @@ window.TRANSFER_APP_CONFIG = {
       ],
     },
     {
-      label: "User 8",
+      label: "fedavinci (#19)",
       wallet: "0x48c1853a6a5fd3b7a0b78969af00bf951c4e446c",
-      defaultRecipient: "",
+      userId: "19",
+      username: "fedavinci",
+      defaultRecipient: "0x9cbef78e515ac7040f17d5c38eefb866c8a3ff20",
+      embeddedWallet: "",
+      note: "No embedded wallet found in current binding info.",
       summary: { yes: "0", no: "2.055555", usdb: "0.001949", marketCount: 1 },
       assets: { usdb: { amount: "0.001949" } },
       positions: [
@@ -138,9 +167,13 @@ window.TRANSFER_APP_CONFIG = {
       ],
     },
     {
-      label: "User 9",
+      label: "Hibiii (#8250)",
       wallet: "0x29d2661951c6fb7796dfd463624a7dd2bfcee962",
-      defaultRecipient: "",
+      userId: "8250",
+      username: "Hibiii",
+      defaultRecipient: "0xf8a18366afc45aa6755c56e1b8840afe714b092a",
+      embeddedWallet: "",
+      note: "No embedded wallet found in current binding info.",
       summary: { yes: "0", no: "0.722114", usdb: "0.001667", marketCount: 1 },
       assets: { usdb: { amount: "0.001667" } },
       positions: [
