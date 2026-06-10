@@ -1,9 +1,11 @@
 const erc20Abi = [
+  "event Transfer(address indexed from, address indexed to, uint256 value)",
   "function balanceOf(address owner) view returns (uint256)",
   "function decimals() view returns (uint8)",
   "function symbol() view returns (string)",
   "function transfer(address to, uint256 amount) returns (bool)",
 ];
+const erc20Interface = new ethers.Interface(erc20Abi);
 
 const config = window.TRANSFER_APP_CONFIG || {};
 const chain = config.chain || {};
@@ -18,6 +20,8 @@ const allowedUserEl = document.getElementById("allowedUser");
 const networkEl = document.getElementById("network");
 const assetListEl = document.getElementById("assetList");
 const transferDetailEl = document.getElementById("transferDetail");
+const transferRecordsEl = document.getElementById("transferRecords");
+const copyRecordsBtn = document.getElementById("copyRecordsBtn");
 
 let provider;
 let signer;
@@ -68,12 +72,22 @@ function readCompletedTransfers() {
   }
 }
 
-function writeCompletedTransfer(item, txHash) {
+function writeCompletedTransfer(item, receipt, transferEvent) {
   const completed = readCompletedTransfers();
   completed[item.id] = {
+    id: item.id,
+    kind: item.kind,
+    marketId: item.marketId || "",
+    direction: item.direction || "",
+    tokenAddress: item.address,
     amount: item.amount,
     symbol: item.symbol,
-    txHash,
+    rawAmount: transferEvent.value.toString(),
+    from: transferEvent.from,
+    to: transferEvent.to,
+    txHash: receipt.hash,
+    blockNumber: receipt.blockNumber,
+    logIndex: transferEvent.logIndex,
     completedAt: new Date().toISOString(),
   };
   window.localStorage.setItem(transferStorageKey(), JSON.stringify(completed));
@@ -85,6 +99,42 @@ function isCompleted(item) {
 
 function hasPositiveAmount(item) {
   return Boolean(item.amount && Number(item.amount) > 0);
+}
+
+function transferRecords() {
+  return Object.values(readCompletedTransfers()).sort((a, b) => {
+    return String(b.completedAt || "").localeCompare(String(a.completedAt || ""));
+  });
+}
+
+function validateTransferEvent(receipt, token, rawAmount, recipient) {
+  for (const log of receipt.logs || []) {
+    if (!sameAddress(log.address, token.address)) continue;
+
+    let parsed;
+    try {
+      parsed = erc20Interface.parseLog(log);
+    } catch {
+      continue;
+    }
+
+    if (parsed?.name !== "Transfer") continue;
+
+    const from = parsed.args.from;
+    const to = parsed.args.to;
+    const value = parsed.args.value;
+
+    if (sameAddress(from, account) && sameAddress(to, recipient) && value === rawAmount) {
+      return {
+        from,
+        to,
+        value,
+        logIndex: log.index ?? log.logIndex ?? null,
+      };
+    }
+  }
+
+  throw new Error("Transaction confirmed, but matching Transfer event was not found.");
 }
 
 function buildTransferItems() {
@@ -179,12 +229,14 @@ function renderAssets() {
   if (!account) {
     assetListEl.innerHTML = `<div class="empty">Connect wallet to view pending assets.</div>`;
     renderTransferDetail(null);
+    renderTransferRecords();
     return;
   }
 
   if (!currentUser) {
     assetListEl.innerHTML = `<div class="empty">This wallet is not eligible for asset transfer.</div>`;
     renderTransferDetail(null);
+    renderTransferRecords();
     return;
   }
 
@@ -193,6 +245,7 @@ function renderAssets() {
   if (!visibleTokens.length) {
     assetListEl.innerHTML = `<div class="empty">No pending assets for this wallet.</div>`;
     renderTransferDetail(null);
+    renderTransferRecords();
     return;
   }
 
@@ -242,6 +295,7 @@ function renderAssets() {
   });
 
   renderTransferDetail(tokenById(selectedItemId));
+  renderTransferRecords();
 }
 
 async function refreshBalances() {
@@ -320,6 +374,44 @@ function renderTransferDetail(item) {
   syncButtons();
 }
 
+function renderTransferRecords() {
+  const records = transferRecords();
+  copyRecordsBtn.disabled = records.length === 0;
+
+  if (!account) {
+    transferRecordsEl.innerHTML = `<div class="empty compact-empty">Connect wallet to view local records.</div>`;
+    return;
+  }
+
+  if (!records.length) {
+    transferRecordsEl.innerHTML = `<div class="empty compact-empty">No confirmed transfers recorded in this browser.</div>`;
+    return;
+  }
+
+  transferRecordsEl.innerHTML = records
+    .map((record) => {
+      const explorer = chain.blockExplorerUrls?.[0] || "";
+      const txUrl = explorer ? `${explorer}/tx/${record.txHash}` : "";
+      return `
+        <article class="record-row">
+          <div>
+            <strong>${record.symbol}</strong>
+            <span>${record.amount} -> ${shortAddress(record.to)}</span>
+          </div>
+          <div>
+            <small>Block ${record.blockNumber}</small>
+            ${
+              txUrl
+                ? `<a href="${txUrl}" target="_blank" rel="noreferrer">${shortAddress(record.txHash)}</a>`
+                : `<span>${shortAddress(record.txHash)}</span>`
+            }
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+}
+
 async function refreshState() {
   await updateChainState(true);
   currentUser = findUser(account);
@@ -363,9 +455,10 @@ async function sendTransfer(tokenId) {
 
     hintEl.innerHTML = `Submitted: <a href="${chain.blockExplorerUrls[0]}/tx/${tx.hash}" target="_blank" rel="noreferrer">${shortAddress(tx.hash)}</a>`;
     const receipt = await tx.wait();
+    const transferEvent = validateTransferEvent(receipt, token, rawAmount, recipient);
 
     hintEl.innerHTML = `Confirmed in block ${receipt.blockNumber}.`;
-    writeCompletedTransfer(token, tx.hash);
+    writeCompletedTransfer(token, receipt, transferEvent);
     selectedItemId = "";
     setStatus(`${token.symbol} transfer confirmed.`, "success");
     renderAssets();
@@ -408,12 +501,22 @@ refreshBtn.addEventListener("click", async () => {
   }
 });
 
+copyRecordsBtn.addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(JSON.stringify(transferRecords(), null, 2));
+    setStatus("Transfer records copied as JSON.", "success");
+  } catch (err) {
+    setStatus(err?.message || "Failed to copy records.", "error");
+  }
+});
+
 (function init() {
   if (!chain.hexId) {
     setStatus("Missing chain config.", "error");
   }
 
   renderAssets();
+  renderTransferRecords();
   syncButtons();
 
   if (window.ethereum) {

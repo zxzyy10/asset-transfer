@@ -61,3 +61,10 @@ This project follows the faucet repo layout:
 In Vercel, import this repository and keep Framework Preset as `Other` or
 static/default. Leave Build Command and Output Directory empty unless Vercel
 requires values for your project settings.
+
+## Local Transfer Records
+
+After a transaction confirms, the page parses the receipt and requires a
+matching ERC20 `Transfer` event before marking the item completed. Completed
+items are recorded in browser `localStorage` and shown in the Transfer Records
+panel. The records can be copied as JSON from the UI.

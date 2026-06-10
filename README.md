@@ -9,6 +9,9 @@ Static Base mainnet transfer page for a reserved list of users.
 - Checks whether the connected wallet is in the reserved user list.
 - Lets an allowed user transfer configured assets one by one.
 - Reads ERC20 balances and sends standard ERC20 `transfer` transactions.
+- Verifies the confirmed transaction contains a matching ERC20 `Transfer`
+  event before marking an asset completed.
+- Stores lightweight local transfer records in browser `localStorage`.
 
 ## Configuration
 
@@ -59,6 +62,17 @@ npm run serve:frontend
 ```
 
 Open `http://127.0.0.1:4173/`.
+
+## Transfer Records
+
+Records are local to the user's browser and keyed by chain plus connected
+wallet. Each confirmed record includes asset id, symbol, token address, fixed
+recipient, amount, raw amount, transaction hash, block number, and completion
+time. The UI can copy these records as JSON.
+
+This is intentionally lightweight. It is not a shared audit database; use a
+serverless API, Vercel KV, or a backend indexer if cross-device or admin-level
+records are required.
 
 ## Vercel
 
