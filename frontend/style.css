@@ -33,8 +33,7 @@ body {
 
 .topbar,
 .status-panel,
-.transfer-panel,
-.list-panel {
+.transfer-panel {
   background: var(--panel);
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
@@ -164,8 +163,7 @@ button:disabled {
   white-space: nowrap;
 }
 
-.transfer-panel,
-.list-panel {
+.transfer-panel {
   margin-top: 16px;
   border-radius: 8px;
   padding: 22px 24px;
@@ -182,14 +180,9 @@ button:disabled {
 .panel-heading p,
 .asset-head p,
 .hint,
-.empty,
-.user-row small {
+.empty {
   color: var(--muted);
   font-size: 13px;
-}
-
-.panel-heading.compact {
-  align-items: center;
 }
 
 .asset-list {
@@ -274,32 +267,6 @@ input:disabled {
   color: var(--primary);
 }
 
-.reserved-users {
-  display: grid;
-  gap: 8px;
-}
-
-.user-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 10px 12px;
-}
-
-.user-row div {
-  display: grid;
-  gap: 2px;
-}
-
-.user-row span {
-  color: var(--muted);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 12px;
-}
-
 .empty {
   border: 1px dashed var(--border);
   border-radius: 6px;
@@ -325,16 +292,14 @@ input:disabled {
   }
 
   .topbar,
-  .panel-heading,
-  .user-row {
+  .panel-heading {
     align-items: stretch;
     flex-direction: column;
   }
 
   .topbar,
   .status-panel,
-  .transfer-panel,
-  .list-panel {
+  .transfer-panel {
     padding: 16px;
   }
 }

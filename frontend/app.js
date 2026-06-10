@@ -17,8 +17,6 @@ const accountEl = document.getElementById("account");
 const allowedUserEl = document.getElementById("allowedUser");
 const networkEl = document.getElementById("network");
 const assetListEl = document.getElementById("assetList");
-const reservedUsersEl = document.getElementById("reservedUsers");
-const userCountEl = document.getElementById("userCount");
 
 let provider;
 let signer;
@@ -137,39 +135,6 @@ async function updateChainState(showPrompt = false) {
   if (!currentChainOk && showPrompt) {
     setStatus(`Please switch network to ${chain.name}.`, "warn");
   }
-}
-
-function renderReservedUsers() {
-  userCountEl.textContent = `${users.length} users`;
-
-  if (!users.length) {
-    reservedUsersEl.innerHTML = `<div class="empty">User list is reserved in frontend/config.js.</div>`;
-    return;
-  }
-
-  reservedUsersEl.innerHTML = users
-    .map((user) => {
-      const assetText = Object.entries(user.assets || {})
-        .map(([assetId, item]) => {
-          const token = tokens.find((candidate) => candidate.id === assetId);
-          return `${token?.symbol || assetId}: ${item.amount || "-"}`;
-        })
-        .join(" / ");
-      const summary = user.summary
-        ? `YES ${user.summary.yes} / NO ${user.summary.no} / USDB ${user.summary.usdb} / ${user.summary.marketCount} markets`
-        : assetText;
-
-      return `
-        <div class="user-row">
-          <div>
-            <strong>${user.label || "User"}</strong>
-            <span>${shortAddress(user.wallet)}</span>
-          </div>
-          <small>${summary || "No preset assets"}</small>
-        </div>
-      `;
-    })
-    .join("");
 }
 
 function renderAssets() {
@@ -355,7 +320,6 @@ refreshBtn.addEventListener("click", async () => {
     setStatus("Missing chain config.", "error");
   }
 
-  renderReservedUsers();
   renderAssets();
   syncButtons();
 
