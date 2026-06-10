@@ -178,37 +178,117 @@ button:disabled {
 }
 
 .panel-heading p,
-.asset-head p,
+.detail-head p,
 .hint,
 .empty {
   color: var(--muted);
   font-size: 13px;
 }
 
-.asset-list {
+.transfer-layout {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
+  grid-template-columns: minmax(320px, 0.95fr) minmax(360px, 1.05fr);
+  gap: 16px;
+  align-items: start;
 }
 
-.asset-card {
+.pending-list {
   display: grid;
-  gap: 12px;
+  gap: 8px;
+}
+
+.pending-row {
+  display: grid;
+  gap: 8px;
   min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel-soft);
+  padding: 12px;
+  color: var(--text);
+  text-align: left;
+}
+
+.pending-row:hover {
+  border-color: #a9b8ce;
+  background: #fff;
+}
+
+.pending-row.selected {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px rgba(20, 88, 212, 0.16);
+}
+
+.pending-row.disabled {
+  cursor: not-allowed;
+}
+
+.pending-main,
+.detail-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pending-main strong,
+.detail-head h3 {
+  display: block;
+  font-size: 16px;
+}
+
+.pending-main span {
+  display: -webkit-box;
+  margin-top: 3px;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 13px;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.pending-main small {
+  flex: 0 0 auto;
+  color: var(--text);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pending-row em {
+  color: var(--warn);
+  font-size: 12px;
+  font-style: normal;
+}
+
+.balance {
+  flex: 0 0 auto;
+  align-self: start;
+  border-radius: 999px;
+  background: #e9eef7;
+  padding: 4px 8px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.transfer-detail {
+  display: grid;
+  gap: 14px;
+  min-height: 260px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--panel-soft);
   padding: 16px;
 }
 
-.asset-head {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
+.detail-empty {
+  display: grid;
+  align-content: center;
+  gap: 8px;
+  min-height: 220px;
+  text-align: center;
 }
 
-.balance {
-  flex: 0 0 auto;
+.detail-kind {
   align-self: start;
   border-radius: 999px;
   background: #e9eef7;
@@ -275,7 +355,7 @@ input:disabled {
 }
 
 @media (max-width: 860px) {
-  .asset-list,
+  .transfer-layout,
   .meta {
     grid-template-columns: 1fr;
   }

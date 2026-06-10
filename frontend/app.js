@@ -17,12 +17,14 @@ const accountEl = document.getElementById("account");
 const allowedUserEl = document.getElementById("allowedUser");
 const networkEl = document.getElementById("network");
 const assetListEl = document.getElementById("assetList");
+const transferDetailEl = document.getElementById("transferDetail");
 
 let provider;
 let signer;
 let account = "";
 let currentUser = null;
 let currentChainOk = false;
+let selectedItemId = "";
 
 function setStatus(text, tone = "info") {
   statusEl.textContent = text;
@@ -54,6 +56,37 @@ function findUser(wallet) {
   return users.find((user) => sameAddress(user.wallet, wallet)) || null;
 }
 
+function transferStorageKey() {
+  return `bizzy-transfer-completed:${chain.id || chain.hexId}:${(account || "").toLowerCase()}`;
+}
+
+function readCompletedTransfers() {
+  try {
+    return JSON.parse(window.localStorage.getItem(transferStorageKey()) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function writeCompletedTransfer(item, txHash) {
+  const completed = readCompletedTransfers();
+  completed[item.id] = {
+    amount: item.amount,
+    symbol: item.symbol,
+    txHash,
+    completedAt: new Date().toISOString(),
+  };
+  window.localStorage.setItem(transferStorageKey(), JSON.stringify(completed));
+}
+
+function isCompleted(item) {
+  return Boolean(readCompletedTransfers()[item.id]);
+}
+
+function hasPositiveAmount(item) {
+  return Boolean(item.amount && Number(item.amount) > 0);
+}
+
 function buildTransferItems() {
   const baseItems = tokens.map((token) => ({
     ...token,
@@ -80,6 +113,11 @@ function buildTransferItems() {
   }));
 
   return currentUser ? [...baseItems, ...positionItems] : baseItems;
+}
+
+function pendingTransferItems() {
+  if (!currentUser) return [];
+  return buildTransferItems().filter((item) => hasPositiveAmount(item) && !isCompleted(item));
 }
 
 async function currentChainIdHex() {
@@ -138,11 +176,28 @@ async function updateChainState(showPrompt = false) {
 }
 
 function renderAssets() {
-  const visibleTokens = buildTransferItems().filter((token) => token.enabled || token.note || token.kind === "erc20");
+  if (!account) {
+    assetListEl.innerHTML = `<div class="empty">Connect wallet to view pending assets.</div>`;
+    renderTransferDetail(null);
+    return;
+  }
+
+  if (!currentUser) {
+    assetListEl.innerHTML = `<div class="empty">This wallet is not eligible for asset transfer.</div>`;
+    renderTransferDetail(null);
+    return;
+  }
+
+  const visibleTokens = pendingTransferItems();
 
   if (!visibleTokens.length) {
-    assetListEl.innerHTML = `<div class="empty">No assets configured.</div>`;
+    assetListEl.innerHTML = `<div class="empty">No pending assets for this wallet.</div>`;
+    renderTransferDetail(null);
     return;
+  }
+
+  if (!visibleTokens.some((item) => item.id === selectedItemId)) {
+    selectedItemId = visibleTokens[0].enabled && isAddress(visibleTokens[0].address) ? visibleTokens[0].id : "";
   }
 
   assetListEl.innerHTML = visibleTokens
@@ -153,44 +208,38 @@ function renderAssets() {
           ? "Token address is missing."
           : "";
       const isDisabled = Boolean(disabledReason);
+      const selectedClass = token.id === selectedItemId ? " selected" : "";
+      const disabledClass = isDisabled ? " disabled" : "";
 
       return `
-        <article class="asset-card" data-token-id="${token.id}">
-          <div class="asset-head">
+        <button class="pending-row${selectedClass}${disabledClass}" data-token-id="${token.id}" ${isDisabled ? "disabled" : ""}>
+          <div class="pending-main">
             <div>
-              <h3>${token.symbol}</h3>
-              <p>${token.name || token.symbol}</p>
+              <strong>${token.symbol}</strong>
+              <span>${token.name || token.symbol}</span>
             </div>
-            <span class="balance" id="balance-${token.id}">-</span>
+            <small>${token.amount} ${token.symbol.split(" ")[0]}</small>
           </div>
-
-          <label>
-            Token contract
-            <input class="mono" value="${token.address || "TBD"}" disabled />
-          </label>
-
-          <div class="form-grid">
-            <label>
-              Recipient
-              <input id="recipient-${token.id}" class="mono" placeholder="0x..." value="${token.recipient || ""}" ${isDisabled ? "disabled" : ""} />
-            </label>
-            <label>
-              Amount
-              <input id="amount-${token.id}" inputmode="decimal" placeholder="0.0" value="${token.amount || ""}" ${isDisabled ? "disabled" : ""} />
-            </label>
-          </div>
-
-          <button id="send-${token.id}" class="send" ${isDisabled ? "disabled" : ""}>Transfer ${token.symbol}</button>
-          <div class="hint" id="hint-${token.id}">${disabledReason || "Ready after wallet connect and whitelist match."}</div>
-        </article>
+          <span class="balance" id="balance-${token.id}">${isDisabled ? "Not ready" : "-"}</span>
+          ${disabledReason ? `<em>${disabledReason}</em>` : ""}
+        </button>
       `;
     })
     .join("");
 
   visibleTokens.forEach((token) => {
-    const button = document.getElementById(`send-${token.id}`);
-    if (button) button.addEventListener("click", () => sendTransfer(token.id));
+    const row = assetListEl.querySelector(`[data-token-id="${token.id}"]`);
+    if (row) {
+      row.addEventListener("click", () => {
+        selectedItemId = token.id;
+        renderAssets();
+        renderTransferDetail(token);
+        refreshBalances();
+      });
+    }
   });
+
+  renderTransferDetail(tokenById(selectedItemId));
 }
 
 async function refreshBalances() {
@@ -199,7 +248,7 @@ async function refreshBalances() {
   await Promise.all(
     enabledTokens().map(async (token) => {
       const balanceEl = document.getElementById(`balance-${token.id}`);
-      const hintEl = document.getElementById(`hint-${token.id}`);
+      if (!balanceEl) return;
 
       try {
         const contract = new ethers.Contract(token.address, erc20Abi, provider);
@@ -208,10 +257,8 @@ async function refreshBalances() {
           token.decimals ?? contract.decimals(),
         ]);
         balanceEl.textContent = `${ethers.formatUnits(rawBalance, decimals)} ${token.symbol}`;
-        hintEl.textContent = currentUser ? "Ready." : "Connected wallet is not in the reserved user list.";
       } catch (err) {
         balanceEl.textContent = "Read failed";
-        hintEl.textContent = err?.shortMessage || err?.message || "Failed to read balance.";
       }
     }),
   );
@@ -221,11 +268,54 @@ async function refreshBalances() {
 
 function syncButtons() {
   const canSend = Boolean(account && currentUser && currentChainOk);
-  enabledTokens().forEach((token) => {
-    const button = document.getElementById(`send-${token.id}`);
-    if (button) button.disabled = !canSend;
-  });
+  const sendBtn = document.getElementById("sendSelectedBtn");
+  if (sendBtn) sendBtn.disabled = !canSend || !selectedItemId;
   refreshBtn.disabled = !account;
+}
+
+function renderTransferDetail(item) {
+  if (!item || !item.enabled || !isAddress(item.address)) {
+    transferDetailEl.innerHTML = `
+      <div class="detail-empty">
+        <h3>Select an asset</h3>
+        <p>Choose a pending asset from the list after connecting an eligible wallet.</p>
+      </div>
+    `;
+    syncButtons();
+    return;
+  }
+
+  transferDetailEl.innerHTML = `
+    <div class="detail-head">
+      <div>
+        <h3>${item.symbol}</h3>
+        <p>${item.name || item.symbol}</p>
+      </div>
+      <span class="detail-kind">${item.kind === "position" ? "Outcome" : "ERC20"}</span>
+    </div>
+
+    <label>
+      Token contract
+      <input class="mono" value="${item.address}" disabled />
+    </label>
+
+    <div class="form-grid">
+      <label>
+        Recipient
+        <input id="selectedRecipient" class="mono" placeholder="0x..." value="${item.recipient || ""}" />
+      </label>
+      <label>
+        Amount
+        <input id="selectedAmount" inputmode="decimal" placeholder="0.0" value="${item.amount || ""}" />
+      </label>
+    </div>
+
+    <button id="sendSelectedBtn" class="send">Transfer ${item.symbol}</button>
+    <div class="hint" id="selectedHint">Ready.</div>
+  `;
+
+  document.getElementById("sendSelectedBtn").addEventListener("click", () => sendTransfer(item.id));
+  syncButtons();
 }
 
 async function refreshState() {
@@ -246,10 +336,10 @@ async function refreshState() {
 
 async function sendTransfer(tokenId) {
   const token = tokenById(tokenId);
-  const recipientInput = document.getElementById(`recipient-${tokenId}`);
-  const amountInput = document.getElementById(`amount-${tokenId}`);
-  const hintEl = document.getElementById(`hint-${tokenId}`);
-  const button = document.getElementById(`send-${tokenId}`);
+  const recipientInput = document.getElementById("selectedRecipient");
+  const amountInput = document.getElementById("selectedAmount");
+  const hintEl = document.getElementById("selectedHint");
+  const button = document.getElementById("sendSelectedBtn");
 
   try {
     if (!account || !signer) throw new Error("Please connect wallet first.");
@@ -275,7 +365,10 @@ async function sendTransfer(tokenId) {
     const receipt = await tx.wait();
 
     hintEl.innerHTML = `Confirmed in block ${receipt.blockNumber}.`;
+    writeCompletedTransfer(token, tx.hash);
+    selectedItemId = "";
     setStatus(`${token.symbol} transfer confirmed.`, "success");
+    renderAssets();
     await refreshBalances();
   } catch (err) {
     const message = err?.shortMessage || err?.message || "Transfer failed.";

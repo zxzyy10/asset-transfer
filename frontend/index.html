@@ -38,13 +38,16 @@
       <section class="transfer-panel">
         <div class="panel-heading">
           <div>
-            <h2>Assets</h2>
-            <p>Choose one asset at a time, confirm recipient and amount, then send.</p>
+            <h2>Pending Assets</h2>
+            <p>Click one pending asset, confirm recipient and amount, then transfer it.</p>
           </div>
           <button id="refreshBtn" class="secondary" disabled>Refresh</button>
         </div>
 
-        <div id="assetList" class="asset-list"></div>
+        <div class="transfer-layout">
+          <div id="assetList" class="pending-list"></div>
+          <aside id="transferDetail" class="transfer-detail"></aside>
+        </div>
       </section>
 
     </main>
