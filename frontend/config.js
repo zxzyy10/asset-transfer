@@ -83,7 +83,7 @@ window.TRANSFER_APP_CONFIG = {
       wallet: "0x69db677fe9a93aaaeef0e0171f08a72de1e38baa",
       userId: "177",
       username: "hakdog",
-      defaultRecipient: "0x69db677fe9a93aaaeef0e0171f08a72de1e38baa",
+      defaultRecipient: "0x72a29e2554ab572e8b547a46055d9e75cfc301de",
       embeddedWallet: "0x69db677fe9a93aaaeef0e0171f08a72de1e38baa",
       note: "Current account wallet / embedded wallet.",
       summary: { yes: "0", no: "16.773848", usdb: "29.909141", marketCount: 1 },

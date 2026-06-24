@@ -473,7 +473,7 @@ async function sendTransfer(tokenId) {
 
 connectBtn.addEventListener("click", async () => {
   try {
-    if (!window.ethereum) throw new Error("No wallet detected. Please install MetaMask.");
+    if (!window.ethereum) throw new Error("No wallet detected. Please install a browser wallet such as MetaMask or Rabby.");
 
     provider = new ethers.BrowserProvider(window.ethereum);
     await provider.send("eth_requestAccounts", []);
